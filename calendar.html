@@ -61,7 +61,7 @@ const KEY='calAuth';
 const TTL_MS=2592000000;
 const wrap=document.querySelector('.wrap');
 const gate=document.getElementById('gate');
-function showApp(){if(wrap)wrap.style.display='block';if(gate)gate.style.display='none';}
+function showApp(){if(wrap)wrap.style.display='flex';if(gate)gate.style.display='none';}
 function valid(tok){return tok&&tok.hash===HASH&&tok.exp>Date.now();}
 try{
   const raw=localStorage.getItem(KEY);
@@ -92,7 +92,7 @@ if(form){
 </script>
 
 <script>(function(){
-var GEN_MS=1760798393666;
+var GEN_MS=1760798802344;
 var REFRESH_MS=3600000;
 var LOAD_TIME=Date.now();
 var MIN_AGE_BEFORE_CHECK=5000;
