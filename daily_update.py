@@ -3,7 +3,7 @@ import datetime
 import time
 from pathlib import Path
 from collections import defaultdict
-from utils import send_email, error_email
+from utils import send_email, error_email, get_email_recipients
 
 PROJECT_PATH = Path("/home/johannes/code/fewo_new_new/")
 OVERVIEWS_DIR = PROJECT_PATH / "overviews"
@@ -81,9 +81,10 @@ def main():
         print(content)
         
         try:
-            # send_email(subject, content, "REDACTED_EMAIL_1@example.com")
-            time.sleep(8)
-            send_email(subject, content, "REDACTED_EMAIL_2@example.com")
+            recipients = get_email_recipients('main')
+            for recipient in recipients:
+                send_email(subject, content, recipient)
+                time.sleep(8)
         except Exception as e:
             error_email(f"Failed to send 'the daily mail' email: {e}")
 

@@ -46,6 +46,21 @@ def get_fewo_name(fewo):
 #get_fewo_name("Wellengang")
 
 
+def get_email_recipients(category='main'):
+	"""Load email recipients from .env file."""
+	if category == 'main':
+		recipients = os.environ.get("EMAIL_RECIPIENTS_MAIN", "").split(',')
+	elif category == 'cleaning':
+		recipients = os.environ.get("EMAIL_RECIPIENT_CLEANING", "").split(',')
+	elif category == 'test':
+		recipients = [os.environ.get("EMAIL_RECIPIENT_TEST", "")]
+	elif category == 'errors':
+		recipients = [os.environ.get("EMAIL_RECIPIENT_ERRORS", "")]
+	else:
+		return []
+	return [r.strip() for r in recipients if r.strip()]
+
+
 def send_email(subject, content, recipient):
   SMTP_SERVER = "smtp.mail.yahoo.com"
   SMTP_PORT = 587
@@ -56,7 +71,7 @@ def send_email(subject, content, recipient):
 
   msg = MIMEText(content)
   msg['Subject'] = subject
-  msg['From'] = EMAIL_FROM 
+  msg['From'] = EMAIL_FROM
   msg['To'] = EMAIL_TO
   debuglevel = True
   mail = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
@@ -68,7 +83,10 @@ def send_email(subject, content, recipient):
 
 
 def error_email(error_message):
-	send_email("Error in Fewo Code", error_message, "REDACTED_EMAIL_1@example.com")
+	"""Send error notification email."""
+	recipients = get_email_recipients('errors')
+	if recipients:
+		send_email("Error in Fewo Code", error_message, recipients[0])
 
 
 def order_by_date(bookings):

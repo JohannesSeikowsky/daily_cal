@@ -3,7 +3,7 @@ import json
 import datetime
 import time
 from pathlib import Path
-from utils import send_email, error_email
+from utils import send_email, error_email, get_email_recipients
 
 PROJECT_PATH = Path("/home/johannes/code/fewo_new_new/")
 OVERVIEWS_DIR = PROJECT_PATH / "overviews"
@@ -128,13 +128,10 @@ def main():
         
         if consecutive_bookings:
             email_content = generate_email_content(consecutive_bookings)
-            send_email("Doppelbuchungen Alert", email_content, "REDACTED_EMAIL_1@example.com")
-            time.sleep(8)
-            send_email("Doppelbuchungen Alert", email_content, "REDACTED_EMAIL_2@example.com")
-            time.sleep(8)
-            send_email("Doppelbuchungen Alert", email_content, "REDACTED_EMAIL_3@example.com")
-            time.sleep(8)
-            send_email("Doppelbuchungen Alert", email_content, "REDACTED_EMAIL_4@example.com")
+            all_recipients = get_email_recipients('main') + get_email_recipients('cleaning')
+            for recipient in all_recipients:
+                send_email("Doppelbuchungen Alert", email_content, recipient)
+                time.sleep(8)
             print(email_content)
         else:
             print("No new consecutive bookings found.")

@@ -2,7 +2,7 @@ import os
 import time
 import datetime
 from pathlib import Path
-from utils import send_email, prepend_weekday, error_email
+from utils import send_email, prepend_weekday, error_email, get_email_recipients
 from urls_config import ADMIN_URLS
 
 PROJECT_PATH = Path("/home/johannes/code/fewo_new_new/")
@@ -88,13 +88,10 @@ def main():
     try:
         email_body = generate_email()
         email_body = add_vpartner_links(email_body)
-        # send_email(f"Bookings Overview", email_body, "REDACTED_EMAIL_1@example.com")
-        time.sleep(8)
-        send_email(f"Bookings Overview", email_body, "REDACTED_EMAIL_2@example.com")
-        time.sleep(8)
-        send_email(f"Bookings Overview", email_body, "REDACTED_EMAIL_3@example.com")
-        # time.sleep(8)
-        # send_email(f"Bookings Overview", email_body, "REDACTED_EMAIL_4@example.com")
+        recipients = get_email_recipients('main')
+        for recipient in recipients:
+            send_email(f"Bookings Overview", email_body, recipient)
+            time.sleep(8)
         print(email_body)
     except Exception as e:
         error_email(f"Failed to generate or send booking email: {str(e)}")

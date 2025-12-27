@@ -89,8 +89,8 @@ Note: `calendar.html` is generated and tracked in git for deployment purposes.
 
 **Email Configuration**
 - SMTP: Yahoo (smtp.mail.yahoo.com:587)
-- Credentials in `utils.py` (hardcoded)
-- Most scripts send to: REDACTED_EMAIL_2@example.com, REDACTED_EMAIL_3@example.com
+- Credentials in `.env` (SMTP_USERNAME, SMTP_PASSWORD)
+- Email recipients configured in `.env` (EMAIL_RECIPIENTS_MAIN, EMAIL_RECIPIENT_CLEANING)
 
 **Date Handling**
 - Input format: DD.MM.YY (from v-office.com)
@@ -131,7 +131,7 @@ Note: `calendar.html` is generated and tracked in git for deployment purposes.
 - No formal test suite
 - Test scrapers by checking `overviews/*.txt` files are populated
 - Test calendar by opening `calendar.html` in browser (default password: "Gismo11!")
-- Email scripts can be tested by uncommenting REDACTED_EMAIL_1@example.com recipient lines
+- Email scripts can be tested by setting EMAIL_RECIPIENT_TEST in .env
 
 ## Version Control
 
@@ -146,4 +146,21 @@ Note: `calendar.html` is generated and tracked in git for deployment purposes.
 - Runtime state (seen_bookings.json, prolonged_bookings_history.json)
 - Logs (*.log)
 - Virtual environment (myenv/)
-- Sensitive files (calendar_password.txt)
+- Sensitive files (calendar_password.txt, .env)
+
+## Security Best Practices
+
+**Never commit sensitive data to git:**
+- Email addresses → Store in .env (EMAIL_RECIPIENTS_*)
+- SMTP credentials → Already in .env (SMTP_USERNAME, SMTP_PASSWORD)
+- API tokens → Store in urls_config.py (already gitignored)
+- Passwords → Store in .env or separate config files
+
+**Verify before committing:**
+```bash
+# Check for accidentally committed emails
+git diff --cached | grep -E '@(gmail|yahoo|hotmail)\.com'
+
+# Verify .env is gitignored
+git check-ignore .env
+```
