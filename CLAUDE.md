@@ -34,6 +34,7 @@ This is a holiday home (Ferienwohnung/"Fewo") management system that scrapes boo
 - `double_bookings.py`: Alerts for consecutive bookings by same guest
 
 **Utilities** (`utils.py`)
+- `get_email_recipients(category)`: Load email recipients from .env (categories: 'main', 'cleaning', 'test', 'errors')
 - `send_email()`: Yahoo SMTP email sender
 - `error_email()`: Send error notifications
 - Date formatting helpers (`prepend_weekday()`, `order_by_date()`)
