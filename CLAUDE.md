@@ -74,7 +74,7 @@ git commit -m "message"  # Commit with concise message
 git push origin master   # Push to remote
 ```
 
-Note: `calendar.html` is generated and not tracked. Only source code is version controlled.
+Note: `calendar.html` is generated and tracked in git for deployment purposes.
 
 ## Critical Details
 
@@ -139,9 +139,10 @@ Note: `calendar.html` is generated and not tracked. Only source code is version 
 - All Python source files (*.py)
 - Scripts (*.sh)
 - Configuration files (.gitignore, CLAUDE.md, blocked_out_dates.txt)
+- Generated calendar (calendar.html) for deployment
 
 **Not Tracked:**
-- Generated files (calendar.html, overviews/*.txt)
+- Scraped booking data (overviews/*.txt)
 - Runtime state (seen_bookings.json, prolonged_bookings_history.json)
 - Logs (*.log)
 - Virtual environment (myenv/)

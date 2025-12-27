@@ -12,7 +12,6 @@ env/
 ENV/
 
 # Generated files
-calendar.html
 overviews/*.txt
 
 # Runtime state/data files
