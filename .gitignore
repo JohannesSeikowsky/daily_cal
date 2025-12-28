@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual Environment
+myenv/
+venv/
+env/
+ENV/
+
+# Generated files
+overviews/*.txt
+
+# Runtime state/data files
+seen_bookings.json
+prolonged_bookings_history.json
+
+# Logs
+*.log
+
+# Sensitive files
+calendar_password.txt
+.env
+config_private.py
+urls_config.py
+
+# Test files
+test_*.html
