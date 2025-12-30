@@ -33,6 +33,9 @@ This is a holiday home (Ferienwohnung/"Fewo") management system that scrapes boo
 - `departures_and_arrivals.py`: 36-day departure report with next arrival info
 - `double_bookings.py`: Alerts for consecutive bookings by same guest
 
+**Analysis Scripts**
+- `repeat_guests.py`: Identifies guests with multiple visits across all properties
+
 **Utilities** (`utils.py`)
 - `get_email_recipients(category)`: Load email recipients from .env (categories: 'main', 'cleaning', 'test', 'errors')
 - `send_email()`: Yahoo SMTP email sender
@@ -65,6 +68,7 @@ python daily_update.py              # Today's arrivals/departures
 python bookings_overview.py         # Full booking overview
 python departures_and_arrivals.py   # 36-day departure report
 python double_bookings.py           # Check for consecutive bookings
+python repeat_guests.py             # Find guests with multiple visits → repeat_guests.txt
 ```
 
 ### Git Workflow
@@ -118,9 +122,11 @@ Note: `calendar.html` is generated and tracked in git for deployment purposes.
 ├── bookings_overview.py         # Full booking overview email
 ├── departures_and_arrivals.py   # 36-day departure forecast
 ├── double_bookings.py           # Consecutive booking detector
+├── repeat_guests.py             # Repeat guest analyzer
 ├── utils.py                     # Shared utilities
 ├── push_calendar.sh             # Git deployment script
-├── calendar.html                # Generated calendar (only file tracked by git)
+├── calendar.html                # Generated calendar (tracked by git)
+├── repeat_guests.txt            # Generated repeat guest report (not tracked)
 ├── overviews/*.txt              # Scraped booking data (not tracked)
 ├── seen_bookings.json           # Tracks "new" bookings for calendar
 ├── prolonged_bookings_history.json  # Tracks reported consecutive bookings
