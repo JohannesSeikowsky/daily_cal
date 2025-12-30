@@ -12,6 +12,7 @@ ROOT = Path(__file__).parent
 SRC = ROOT / "overviews"
 OUT = ROOT / "calendar.html"
 SEEN = ROOT / "seen_bookings.json"
+GUEST_HISTORY = ROOT / "guest_history.json"
 BLOCKED_FILE = ROOT / "blocked_out_dates.txt"
 PASS_FILE = ROOT / "calendar_password.txt"
 
@@ -91,6 +92,25 @@ def update_seen_and_new(bookings):
 	new_keys = {k for k in current if (today - parse(seen.get(k, today.isoformat()))).days <= 7}
 	SEEN.write_text(json.dumps(seen, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
 	return new_keys
+
+def update_guest_history_and_repeat(bookings):
+	"""Update guest history and return keys for repeat guest bookings."""
+	try:
+		history = json.loads(GUEST_HISTORY.read_text(encoding="utf-8"))
+		if not isinstance(history, dict):
+			history = {}
+	except Exception:
+		history = {}
+	today = dt.date.today()
+	repeat_keys = set()
+	for home, start, end, guest, *_ in bookings:
+		key = booking_key(home, start, end)
+		if guest in history:
+			repeat_keys.add(key)
+		if guest not in history and end < today:
+			history[guest] = today.isoformat()
+	GUEST_HISTORY.write_text(json.dumps(history, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+	return repeat_keys
 
 def _to_sha256_hex(value: str) -> str:
 	"""Return sha256 hex of value; if prefixed with 'sha256:' treat as pre-hashed."""
@@ -184,7 +204,7 @@ def collect_bookings():
 	homes_ordered = sorted(unique, key=lambda h: (order_idx.get(h, 10**6), h))
 	return homes_ordered, bookings
 
-def render(homes, bookings, blocked_dates=None, new_keys=frozenset(), password_hash_hex: str = ""):
+def render(homes, bookings, blocked_dates=None, new_keys=frozenset(), repeat_keys=frozenset(), password_hash_hex: str = ""):
 	if blocked_dates is None:
 		blocked_dates = []
 	if not homes: return "<h1>No homes found</h1>"
@@ -341,6 +361,7 @@ text{{font-size:{fs}px;fill:#222}}
 			an = item[4] if len(item) > 4 else None
 			is_blocked = item[5] if len(item) > 5 else False
 			key = booking_key(home, start, end)
+			display_guest = f"Stamm: {guest}" if key in repeat_keys else guest
 			# clamp booking to visible window
 			s, e = start, end
 			if e < min_d or s > max_d:
@@ -361,11 +382,11 @@ text{{font-size:{fs}px;fill:#222}}
 				is_new = key in new_keys
 				extra = f" — {gc} guests" if gc is not None else ""
 				animals_extra = f", {an} animals" if (an or 0) > 0 else ""
-				tip = f"{guest} — {display_home}: {fmt(start)} – {fmt(end)}{extra}{animals_extra}" + (" — NEW" if is_new else "")
+				tip = f"{display_guest} — {display_home}: {fmt(start)} – {fmt(end)}{extra}{animals_extra}" + (" — NEW" if is_new else "")
 				cls = "bar new" if is_new else "bar"
 			lines.append(f"<rect class=\"{cls}\" x=\"{x0}\" y=\"{y}\" width=\"{bw}\" height=\"{row_h-gap}\" data-tip=\"{htmlmod.escape(tip)}\"><title>{htmlmod.escape(tip)}</title></rect>")
 			if bw >= 40*SCALE:
-				label = ellipsize(guest if not is_blocked else "x", bw - 8*SCALE, 6.5*SCALE)
+				label = ellipsize(display_guest if not is_blocked else "x", bw - 8*SCALE, 6.5*SCALE)
 				if label:
 					ly = y + (row_h - gap)/2 + 4*SCALE
 					lines.append(f"<text class=barlabel x=\"{x0 + 4*SCALE}\" y=\"{ly}\">{htmlmod.escape(label)}</text>")
@@ -476,8 +497,9 @@ def main():
 	homes, bookings = collect_bookings()
 	blocked = load_blocked_dates()
 	new_keys = update_seen_and_new(bookings)
+	repeat_keys = update_guest_history_and_repeat(bookings)
 	pass_hash = load_password_hash_hex()
-	OUT.write_text(render(homes, bookings, blocked, new_keys, pass_hash), encoding="utf-8")
+	OUT.write_text(render(homes, bookings, blocked, new_keys, repeat_keys, pass_hash), encoding="utf-8")
 	print(f"Wrote {OUT}")
 
 if __name__ == "__main__":

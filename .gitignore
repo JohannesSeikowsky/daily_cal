@@ -16,6 +16,7 @@ overviews/*.txt
 
 # Runtime state/data files
 seen_bookings.json
+guest_history.json
 prolonged_bookings_history.json
 
 # Logs

@@ -23,6 +23,7 @@ This is a holiday home (Ferienwohnung/"Fewo") management system that scrapes boo
 **Calendar System** (`visual_cal.py`)
 - Generates password-protected HTML calendar from booking data
 - Tracks "new" bookings (added within last 7 days) via `seen_bookings.json`
+- Identifies repeat guests (completed past visits) via `guest_history.json` - prefixes their bookings with "Stamm: "
 - Supports blocked-out dates from `blocked_out_dates.txt`
 - Auto-refresh and cache-busting for live deployments
 - Same-day turnover detection (departure day = next arrival day)
@@ -129,6 +130,7 @@ Note: `calendar.html` is generated and tracked in git for deployment purposes.
 ├── repeat_guests.txt            # Generated repeat guest report (not tracked)
 ├── overviews/*.txt              # Scraped booking data (not tracked)
 ├── seen_bookings.json           # Tracks "new" bookings for calendar
+├── guest_history.json           # Tracks guests with completed visits (not tracked)
 ├── prolonged_bookings_history.json  # Tracks reported consecutive bookings
 └── blocked_out_dates.txt        # Manual blocked dates (CSV format)
 ```
@@ -150,7 +152,8 @@ Note: `calendar.html` is generated and tracked in git for deployment purposes.
 
 **Not Tracked:**
 - Scraped booking data (overviews/*.txt)
-- Runtime state (seen_bookings.json, prolonged_bookings_history.json)
+- Runtime state (seen_bookings.json, guest_history.json, prolonged_bookings_history.json)
+- Generated reports (repeat_guests.txt)
 - Logs (*.log)
 - Virtual environment (myenv/)
 - Sensitive files (calendar_password.txt, .env)
