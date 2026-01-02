@@ -457,7 +457,7 @@ if(form){{
 """)
 	if AUTO_REFRESH_MIN > 0:
 		ms = int(AUTO_REFRESH_MIN * 60 * 1000)
-		gen_ms = int(dt.datetime.utcnow().timestamp() * 1000)
+		gen_ms = int(dt.datetime.now(dt.UTC).timestamp() * 1000)
 		snippet = """
 <script>(function(){{
 var GEN_MS={gen_ms};
