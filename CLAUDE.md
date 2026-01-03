@@ -48,13 +48,13 @@ This is a holiday home (Ferienwohnung/"Fewo") management system that scrapes boo
 
 ### Run Scrapers
 ```bash
-python scrape_booking_overviews.py  # Scrape all properties (takes ~4 min)
+python scrape_booking_overviews.py  # Scrape all properties (takes ~9 min for 3 URLs per property)
 ```
 
-**Adding second URLs per property:**
-All entries in FEWOS dictionary are lists with second element as empty string placeholder:
+**Multiple URLs per property:**
+All entries in FEWOS dictionary are lists with three URLs (previous year, current year, next year):
 ```python
-"Property": ["url1", ""]  # Paste second URL to replace empty string
+"Property": ["url_adjustYear=-1", "url_current", "url_adjustYear=1"]
 ```
 Empty URLs are automatically skipped during scraping.
 
