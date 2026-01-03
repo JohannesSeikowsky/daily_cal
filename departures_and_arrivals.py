@@ -172,7 +172,7 @@ def main():
         subject = f"Departures and Arrivals"
         print(report)
         try:
-            all_recipients = get_email_recipients('main') + get_email_recipients('cleaning')
+            all_recipients = get_email_recipients('main') + get_email_recipients('cleaning') + ['joseikowsky@gmail.com']
             for recipient in all_recipients:
                 send_email(subject, report, recipient)
                 time.sleep(8)
