@@ -76,6 +76,8 @@ def generate_html(arrivals):
         "<html>",
         "<head><meta charset='utf-8'></head>",
         "<body>",
+        "<p><a href='calendar.html'>Visual Calendar</a> &nbsp; <a href='quick_overview.html'>Quick Overview</a> &nbsp; <a href='arrivals.html'>Arrivals</a> &nbsp; <a href='departures.html'>Departures</a></p>",
+        "<br>",
         f"<h1>{weekday_german(today)} {today.strftime('%d.%m.%Y')} - Upcoming Arrivals</h1>",
     ]
     current_week = None

@@ -78,6 +78,8 @@ def generate_html(status):
         "<html>",
         "<head><meta charset='utf-8'></head>",
         "<body>",
+        "<p><a href='calendar.html'>Visual Calendar</a> &nbsp; <a href='quick_overview.html'>Quick Overview</a> &nbsp; <a href='arrivals.html'>Arrivals</a> &nbsp; <a href='departures.html'>Departures</a></p>",
+        "<br>",
         f"<h1>{wd} {today.strftime('%d.%m.%Y')} - Quick Overview</h1>",
         "<table>",
     ]
@@ -88,11 +90,11 @@ def generate_html(status):
             count, remaining = info[1], info[2]
             ppl = f"{count} Pers." if count else "? Pers."
             if remaining == 0:
-                text = f"{ppl}, Abreise heute"
+                text = f"{ppl}, departure today"
             elif remaining == 1:
-                text = f"{ppl}, noch 1 Tag"
+                text = f"{ppl}, departure in 1 day"
             else:
-                text = f"{ppl}, noch {remaining} Tage"
+                text = f"{ppl}, departure in {remaining} days"
         elif tag == "vacant":
             days = info[1]
             if days == 1:

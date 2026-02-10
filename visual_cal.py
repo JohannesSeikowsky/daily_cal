@@ -309,6 +309,8 @@ text{{font-size:{fs}px;fill:#222}}
 """)
 	# hide calendar until authed when gate is active
 	wrap_style = " style=\"display:none\"" if password_hash_hex else ""
+	nav_html = "<p><a href='calendar.html'>Visual Calendar</a> &nbsp; <a href='quick_overview.html'>Quick Overview</a> &nbsp; <a href='arrivals.html'>Arrivals</a> &nbsp; <a href='departures.html'>Departures</a></p><br>"
+	lines.append(f"<div id=nav{wrap_style} style=\"font-family:initial;margin:8px\">{nav_html}</div>")
 	lines.append(f"<div class=wrap{wrap_style}>")
 	# labels column
 	lines.append(f"<div class=labels-col><svg width=\"{label_w}\" height=\"{h}\" xmlns=\"http://www.w3.org/2000/svg\">")
@@ -425,7 +427,8 @@ const KEY='calAuth';
 const TTL_MS={days30_ms};
 const wrap=document.querySelector('.wrap');
 const gate=document.getElementById('gate');
-function showApp(){{if(wrap)wrap.style.display='flex';if(gate)gate.style.display='none';}}
+const nav=document.getElementById('nav');
+function showApp(){{if(wrap)wrap.style.display='flex';if(nav)nav.style.display='block';if(gate)gate.style.display='none';}}
 function valid(tok){{return tok&&tok.hash===HASH&&tok.exp>Date.now();}}
 try{{
   const raw=localStorage.getItem(KEY);
