@@ -1,11 +1,13 @@
 """Generate a simple HTML page listing arrivals in the next 3 weeks."""
 
+import json
 from pathlib import Path
 from datetime import date, timedelta, datetime
 
 ROOT = Path(__file__).parent
 SRC = ROOT / "overviews"
 OUT = ROOT / "arrivals.html"
+SEEN = ROOT / "seen_bookings.json"
 
 WEEKDAYS = {0: "Mo.", 1: "Di.", 2: "Mi.", 3: "Do.", 4: "Fr.", 5: "Sa.", 6: "So."}
 
@@ -25,10 +27,31 @@ def weekday_german(d):
     return WEEKDAYS[d.weekday()]
 
 
+def load_seen_bookings():
+    """Load seen_bookings.json; return (all_keys, new_keys) or (None, None) if unavailable."""
+    if not SEEN.exists():
+        return None, None
+    try:
+        seen = json.loads(SEEN.read_text(encoding="utf-8"))
+    except Exception:
+        return None, None
+    today = date.today()
+    new_keys = set()
+    for key, first_seen_str in seen.items():
+        try:
+            first_seen = date.fromisoformat(first_seen_str)
+        except Exception:
+            continue
+        if (today - first_seen).days <= 7:
+            new_keys.add(key)
+    return set(seen.keys()), new_keys
+
+
 def collect_arrivals(days=21):
     """Read overview files and return arrivals within next N days, sorted by date."""
     today = date.today()
     cutoff = today + timedelta(days=days)
+    all_seen, new_keys = load_seen_bookings()
     arrivals = []
     for fp in sorted(SRC.glob("*.txt")):
         home = fp.stem
@@ -40,6 +63,7 @@ def collect_arrivals(days=21):
                 continue
             try:
                 arr = parse_date(parts[2])
+                dep = parse_date(parts[3])
             except ValueError:
                 continue
             if not (today <= arr <= cutoff):
@@ -53,7 +77,9 @@ def collect_arrivals(days=21):
                 guest_count = nums[0] + (nums[1] if len(nums) > 1 else 0)
             except (ValueError, IndexError):
                 guest_count = None
-            arrivals.append((arr, home, guest_count, length))
+            key = f"{home}|{arr.isoformat()}|{dep.isoformat()}"
+            is_new = all_seen is not None and (key in new_keys or key not in all_seen)
+            arrivals.append((arr, home, guest_count, length, is_new))
     return sorted(arrivals, key=lambda x: x[0])
 
 
@@ -81,15 +107,16 @@ def generate_html(arrivals):
         f"<h1>{weekday_german(today)} {today.strftime('%d.%m.%Y')} - Upcoming Arrivals</h1>",
     ]
     current_week = None
-    for arr, home, count, length in arrivals:
+    for arr, home, count, length, is_new in arrivals:
         week = week_label(arr, today)
         if week != current_week:
             current_week = week
             lines.append(f"<h3>{week}</h3>")
         ppl = f"{count} Personen" if count else "? Personen"
         stay = f"für {length} {'Tag' if length == 1 else 'Tage'}" if length else "für ? Tage"
+        new_tag = "<b style='color:red'>NEW:</b> " if is_new else ""
         lines.append(
-            f"<p>{weekday_german(arr)} {arr.strftime('%d.%m.')} / {home} / {ppl} / {stay}</p>"
+            f"<p>{new_tag}{weekday_german(arr)} {arr.strftime('%d.%m.')} / {home} / {ppl} / {stay}</p>"
         )
     if not arrivals:
         lines.append("<p>Keine Anreisen in den nächsten 3 Wochen.</p>")

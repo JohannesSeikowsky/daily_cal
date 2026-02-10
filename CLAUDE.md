@@ -36,7 +36,7 @@ This is a holiday home (Ferienwohnung/"Fewo") management system that scrapes boo
 
 **HTML Dashboard Pages**
 - `quick_overview.py`: Current occupancy status of all properties → `quick_overview.html`
-- `upcoming_arrivals.py`: Arrivals in next 3 weeks grouped by week → `arrivals.html`
+- `upcoming_arrivals.py`: Arrivals in next 3 weeks grouped by week → `arrivals.html` (highlights new bookings via `seen_bookings.json`)
 - `upcoming_departures.py`: Departures in next 3 weeks grouped by week → `departures.html`
 
 **Analysis Scripts**
@@ -143,7 +143,7 @@ Note: `calendar.html`, `quick_overview.html`, `arrivals.html`, and `departures.h
 ├── departures.html              # Generated departures page (tracked by git)
 ├── repeat_guests.txt            # Generated repeat guest report (not tracked)
 ├── overviews/*.txt              # Scraped booking data (not tracked)
-├── seen_bookings.json           # Tracks "new" bookings for calendar
+├── seen_bookings.json           # Tracks "new" bookings for calendar and arrivals page
 ├── guest_history.json           # Tracks guests with completed visits (not tracked)
 ├── prolonged_bookings_history.json  # Tracks reported consecutive bookings
 └── blocked_out_dates.txt        # Manual blocked dates (CSV format)
