@@ -153,7 +153,7 @@ Note: `calendar.html`, `quick_overview.html`, `arrivals.html`, and `departures.h
 
 - No formal test suite
 - Test scrapers by checking `overviews/*.txt` files are populated
-- Test calendar by opening `calendar.html` in browser (default password: "REDACTED")
+- Test calendar by opening `calendar.html` in browser (password stored in `calendar_password.txt`)
 - Email scripts can be tested by setting EMAIL_RECIPIENT_TEST in .env
 
 ## Version Control
