@@ -34,6 +34,11 @@ This is a holiday home (Ferienwohnung/"Fewo") management system that scrapes boo
 - `departures_and_arrivals.py`: 36-day departure report with next arrival info
 - `double_bookings.py`: Alerts for consecutive bookings by same guest
 
+**HTML Dashboard Pages**
+- `quick_overview.py`: Current occupancy status of all properties → `quick_overview.html`
+- `upcoming_arrivals.py`: Arrivals in next 3 weeks grouped by week → `arrivals.html`
+- `upcoming_departures.py`: Departures in next 3 weeks grouped by week → `departures.html`
+
 **Analysis Scripts**
 - `repeat_guests.py`: Identifies guests with multiple visits across all properties
 
@@ -70,6 +75,9 @@ python bookings_overview.py         # Full booking overview
 python departures_and_arrivals.py   # 36-day departure report
 python double_bookings.py           # Check for consecutive bookings
 python repeat_guests.py             # Find guests with multiple visits → repeat_guests.txt
+python quick_overview.py            # Current occupancy → quick_overview.html
+python upcoming_arrivals.py         # 3-week arrival forecast → arrivals.html
+python upcoming_departures.py       # 3-week departure forecast → departures.html
 ```
 
 ### Git Workflow
@@ -80,7 +88,7 @@ git commit -m "message"  # Commit with concise message
 git push origin master   # Push to remote
 ```
 
-Note: `calendar.html` is generated and tracked in git for deployment purposes.
+Note: `calendar.html`, `quick_overview.html`, `arrivals.html`, and `departures.html` are generated and tracked in git for deployment purposes.
 
 ## Critical Details
 
@@ -124,9 +132,15 @@ Note: `calendar.html` is generated and tracked in git for deployment purposes.
 ├── departures_and_arrivals.py   # 36-day departure forecast
 ├── double_bookings.py           # Consecutive booking detector
 ├── repeat_guests.py             # Repeat guest analyzer
+├── quick_overview.py            # Current occupancy dashboard
+├── upcoming_arrivals.py         # 3-week arrival forecast
+├── upcoming_departures.py       # 3-week departure forecast
 ├── utils.py                     # Shared utilities
 ├── push_calendar.sh             # Git deployment script
 ├── calendar.html                # Generated calendar (tracked by git)
+├── quick_overview.html          # Generated occupancy overview (tracked by git)
+├── arrivals.html                # Generated arrivals page (tracked by git)
+├── departures.html              # Generated departures page (tracked by git)
 ├── repeat_guests.txt            # Generated repeat guest report (not tracked)
 ├── overviews/*.txt              # Scraped booking data (not tracked)
 ├── seen_bookings.json           # Tracks "new" bookings for calendar
@@ -148,7 +162,7 @@ Note: `calendar.html` is generated and tracked in git for deployment purposes.
 - All Python source files (*.py)
 - Scripts (*.sh)
 - Configuration files (.gitignore, CLAUDE.md, blocked_out_dates.txt)
-- Generated calendar (calendar.html) for deployment
+- Generated HTML pages (calendar.html, quick_overview.html, arrivals.html, departures.html) for deployment
 
 **Not Tracked:**
 - Scraped booking data (overviews/*.txt)
