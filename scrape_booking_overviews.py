@@ -64,61 +64,48 @@ def filter_page_headers(spans):
             
     return filtered_spans
 
-def scrape_fewo(fewo_name, url, append_mode=False):
-    """Scrape booking data from v-office.com URL and save to file."""
+def scrape_fewo(fewo_name, url):
+    """Fetch one URL and return parsed rows, or None on failure."""
     browser = setup_browser()
     try:
         browser.get(url)
         time.sleep(3)
         spans = [span.text for span in browser.find_elements(By.TAG_NAME, "span")]
         print(spans)
-
-        # Filter out page headers
-        spans = filter_page_headers(spans) # for when PdF has 2
-
+        spans = filter_page_headers(spans)
         rows = parse_booking_rows(spans)
         print("here2")
         print(rows)
-        display_name = get_fewo_name(fewo_name)
-        print(display_name)
-        output_file = PROJECT_PATH / "overviews" / f"{display_name}.txt"
-
-        # Create file regardless of whether there are rows or not
-        if rows:
-            new_data = "\n".join("|".join(row) for row in rows)
-            if append_mode and output_file.exists():
-                # Append mode: add newline separator + new data
-                existing = output_file.read_text()
-                output_file.write_text(existing + "\n" + new_data)
-            else:
-                # First URL or single URL: overwrite
-                output_file.write_text(new_data)
-        else:
-            # No data from this URL
-            print("no rows")
-            if not append_mode:
-                output_file.write_text("")
-
+        return rows
     except Exception as e:
         print(str(e))
-        if "Res.-Nr." not in str(e):
-            pass
+        return None
     finally:
         browser.quit()
         time.sleep(12)
 
 def main():
-    """Scrape all properties, handling single URLs or lists of URLs."""
+    """Scrape all properties; only overwrite the overview file if data was retrieved."""
     for fewo_name, urls in FEWOS.items():
-        # Normalize to list (handles both string and list)
         url_list = urls if isinstance(urls, list) else [urls]
-        # Filter out empty strings
         url_list = [url for url in url_list if url.strip()]
 
-        for idx, url in enumerate(url_list):
-            # First URL overwrites, subsequent URLs append
-            append = (idx > 0)
-            scrape_fewo(fewo_name, url, append_mode=append)
+        all_rows = []
+        for url in url_list:
+            rows = scrape_fewo(fewo_name, url)
+            if rows:
+                all_rows.extend(rows)
+
+        # Only write if we got data. Preserves previous file on full failure,
+        # preventing the cascade where an empty file wipes seen_bookings.json
+        # and causes all bookings to be re-flagged as "new" next run.
+        if all_rows:
+            display_name = get_fewo_name(fewo_name)
+            output_file = PROJECT_PATH / "overviews" / f"{display_name}.txt"
+            output_file.write_text("\n".join("|".join(row) for row in all_rows))
+            print(f"wrote {len(all_rows)} rows to {display_name}.txt")
+        else:
+            print(f"no rows for {fewo_name}; leaving existing file untouched")
 
 if __name__ == "__main__":
     main()

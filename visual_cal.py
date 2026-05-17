@@ -82,8 +82,13 @@ def update_seen_and_new(bookings):
 	for k in current:
 		if k not in seen:
 			seen[k] = seed_date
-	# prune
-	seen = {k: v for k, v in seen.items() if k in current}
+	# Keep entries that are either still in the current scrape OR have a recent
+	# end-date. Never drop an entry just because it's missing from `current`:
+	# if a scraper hiccup wipes a property's overview file, the entries must
+	# survive so the next successful scrape doesn't re-flag every booking as
+	# "new". Genuinely old entries (cancelled bookings) age out by end-date.
+	cutoff = (today - dt.timedelta(days=30)).isoformat()
+	seen = {k: v for k, v in seen.items() if k in current or k.split("|")[-1] >= cutoff}
 	def parse(d: str) -> dt.date:
 		try:
 			return dt.date.fromisoformat(d)
