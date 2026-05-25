@@ -4,6 +4,7 @@ import html as htmlmod
 import json
 import os
 import hashlib
+from collections import Counter
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -53,7 +54,7 @@ def booking_key(home: str, start: dt.date, end: dt.date) -> str:
 	return f"{home}|{start.isoformat()}|{end.isoformat()}"
 
 def update_seen_and_new(bookings):
-	"""Update first-seen store; return keys considered new (≤7 days)."""
+	"""Update first-seen store; return (new_keys, seen_dict)."""
 	today = dt.date.today()
 	first_run = not SEEN.exists()
 	try:
@@ -96,7 +97,7 @@ def update_seen_and_new(bookings):
 			return today
 	new_keys = {k for k in current if (today - parse(seen.get(k, today.isoformat()))).days <= 7}
 	SEEN.write_text(json.dumps(seen, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
-	return new_keys
+	return new_keys, seen
 
 def update_guest_history_and_repeat(bookings):
 	"""Update guest history and return keys for repeat guest bookings."""
@@ -209,9 +210,15 @@ def collect_bookings():
 	homes_ordered = sorted(unique, key=lambda h: (order_idx.get(h, 10**6), h))
 	return homes_ordered, bookings
 
-def render(homes, bookings, blocked_dates=None, new_keys=frozenset(), repeat_keys=frozenset(), password_hash_hex: str = ""):
+def render(homes, bookings, blocked_dates=None, new_keys=frozenset(), repeat_keys=frozenset(), password_hash_hex: str = "", seen_dates=None):
 	if blocked_dates is None:
 		blocked_dates = []
+	if seen_dates is None:
+		seen_dates = {}
+	# any first-seen value shared by >= 10 bookings is a synthetic seed cluster
+	SEED_CLUSTER_MIN = 10
+	_freq = Counter(seen_dates.values())
+	synthetic_dates = {v for v, c in _freq.items() if c >= SEED_CLUSTER_MIN}
 	if not homes: return "<h1>No homes found</h1>"
 	if bookings:
 		pass
@@ -389,7 +396,17 @@ text{{font-size:{fs}px;fill:#222}}
 				is_new = key in new_keys
 				extra = f" — {gc} guests" if gc is not None else ""
 				animals_extra = f", {an} animals" if (an or 0) > 0 else ""
-				tip = f"{display_guest} — {display_home}: {fmt(start)} – {fmt(end)}{extra}{animals_extra}" + (" — NEW" if is_new else "")
+				raw_seen = seen_dates.get(key)
+				if raw_seen in synthetic_dates:
+					eingang = " — Eingang: Unbekannt"
+				elif raw_seen:
+					try:
+						eingang = f" — Eingang: {fmt(dt.date.fromisoformat(raw_seen))}"
+					except Exception:
+						eingang = ""
+				else:
+					eingang = ""
+				tip = f"{display_guest} — {display_home}: {fmt(start)} – {fmt(end)}{extra}{animals_extra}{eingang}" + (" — NEW" if is_new else "")
 				cls = "bar new" if is_new else "bar"
 			lines.append(f"<rect class=\"{cls}\" x=\"{x0}\" y=\"{y}\" width=\"{bw}\" height=\"{row_h-gap}\" data-tip=\"{htmlmod.escape(tip)}\"><title>{htmlmod.escape(tip)}</title></rect>")
 			if bw >= 40*SCALE:
@@ -504,10 +521,10 @@ if(col)col.scrollLeft={scroll_px};
 def main():
 	homes, bookings = collect_bookings()
 	blocked = load_blocked_dates()
-	new_keys = update_seen_and_new(bookings)
+	new_keys, seen = update_seen_and_new(bookings)
 	repeat_keys = update_guest_history_and_repeat(bookings)
 	pass_hash = load_password_hash_hex()
-	OUT.write_text(render(homes, bookings, blocked, new_keys, repeat_keys, pass_hash), encoding="utf-8")
+	OUT.write_text(render(homes, bookings, blocked, new_keys, repeat_keys, pass_hash, seen_dates=seen), encoding="utf-8")
 	print(f"Wrote {OUT}")
 
 if __name__ == "__main__":
