@@ -9,7 +9,7 @@ This is a holiday home (Ferienwohnung/"Fewo") management system that scrapes boo
 ## Core Architecture
 
 ### Data Flow
-1. **Scraping** (`scrape_booking_overviews.py`): Selenium scrapes booking data from v-office.com URLs → saves to `overviews/*.txt`
+1. **Scraping** (`scrape_booking_overviews.py`): downloads booking PDFs from v-office.com URLs and parses them with `pdftotext` → saves to `overviews/*.txt`
 2. **Calendar Generation** (`visual_cal.py`): Reads `overviews/*.txt` → generates interactive `calendar.html`
 3. **Email Reports**: Multiple scripts read `overviews/*.txt` → generate and send email summaries
 
@@ -53,7 +53,7 @@ This is a holiday home (Ferienwohnung/"Fewo") management system that scrapes boo
 
 ### Run Scrapers
 ```bash
-python scrape_booking_overviews.py  # Scrape all properties (takes ~9 min for 3 URLs per property)
+python scrape_booking_overviews.py  # Scrape all properties (~2 min for 3 URLs per property)
 ```
 
 **Multiple URLs per property:**
@@ -98,13 +98,16 @@ Note: `calendar.html`, `quick_overview.html`, `arrivals.html`, and `departures.h
 
 **Hardcoded Paths**
 - Project path: `/home/johannes/code/fewo_new_new/`
-- Firefox binary: `/usr/bin/firefox`
-- geckodriver: `/home/johannes/Desktop/geckodriver`
+
+**System Dependencies**
+- `pdftotext` (poppler-utils) — required by the scraper, checked at startup
 
 **Email Configuration**
 - SMTP: Yahoo (smtp.mail.yahoo.com:587)
 - Credentials in `.env` (SMTP_USERNAME, SMTP_PASSWORD)
-- Email recipients configured in `.env` (EMAIL_RECIPIENTS_MAIN, EMAIL_RECIPIENT_CLEANING)
+- Email recipients configured in `.env` (EMAIL_RECIPIENTS_MAIN, EMAIL_RECIPIENT_CLEANING,
+  EMAIL_RECIPIENT_ERRORS). Without EMAIL_RECIPIENT_ERRORS, `error_email()` silently does
+  nothing and scraper failures go unnoticed.
 
 **Date Handling**
 - Input format: DD.MM.YY (from v-office.com)
@@ -112,20 +115,24 @@ Note: `calendar.html`, `quick_overview.html`, `arrivals.html`, and `departures.h
 - Booking end dates are inclusive (checkout day)
 
 **Scraper Details**
-- Uses headless Firefox with Selenium
-- Parses v-office.com "print stats" pages (span elements)
+- The v-office URLs carry `aspdf=true` and return PDFs. They are fetched directly with
+  `urllib` and parsed with `pdftotext -layout` — no browser involved.
 - Supports multiple URLs per property: FEWOS dictionary accepts either a single URL string or a list of URLs
 - Multiple URLs for same property are merged into single output file
-- Special handling for "Bös Lütte Stuuv" (different page structure)
-- 12-second delay between all URL fetches to avoid rate limiting
-- Filters out page headers for multi-page PDFs
-- Summary lines ("X Belegungen") filtered by visual_cal.py and email scripts
+- **Failure policy: all-or-nothing per property.** If any one of a property's URLs fails to
+  download or parse, the existing `overviews/*.txt` is left untouched and the property is
+  reported in an aggregated error email. Never write a partially-scraped file — a truncated
+  file looks valid to every consumer and silently deletes bookings from the calendar.
+- Each PDF states its own booking count ("N Belegungen"); the parser verifies its row count
+  against it and treats a mismatch, or any unparseable data-looking line, as a failure.
+- Summary lines are used only as that check and are no longer written to `overviews/*.txt`
+  (consumers filter them out anyway).
 
 ## File Structure
 
 ```
 /
-├── scrape_booking_overviews.py  # Web scraper (Selenium)
+├── scrape_booking_overviews.py  # Booking PDF scraper
 ├── visual_cal.py                # Calendar HTML generator
 ├── daily_update.py              # Daily arrival/departure report
 ├── bookings_overview.py         # Full booking overview email
